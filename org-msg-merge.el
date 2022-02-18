@@ -36,7 +36,7 @@ called after the email has been composed."
   :type 'boolean)
 
 
-(defun org-msg-merge-create-send-maybe (template alist &optional send)
+(defun org-msg-merge-create-send-maybe (template alist send)
   "Create mail from TEMPLATE with headers and replacers from LST.
 
 TEMPLATE can be a string or a file path.
@@ -55,8 +55,6 @@ LST is a list of alists of the form:
   (let* ((template (if (file-readable-p template)
 		       (org-msg-merge-file-content-as-string template)
 		     template))
-	 ;; determine if mail(s) should be sent immediately or not
-	 (send (or send org-msg-merge-send-immediately))
 	 ;; list of attachments
 	 (attachments )
 	 ;; disable greeting
@@ -81,8 +79,14 @@ LST is a list of alists of the form:
       (when send
      	(message-send-and-exit)))))
 
-(defun org-msg-merge-from-csv ()
-  ".")
+(defun org-msg-merge-from-csv (csv template &optional send)
+  "Use information in CSV to fill placeholders in TEMPLATE.
+If SEND is non-nil, send emails immediately."
+  (interactive "fChoose CSV file: \nfChoose template file: ")
+  (let* ((alist (org-msg-merge-convert-tbl-to-alist (pcsv-parse-file csv)))
+	 ;; determine if mail(s) should be sent immediately or not
+	 (send (or send org-msg-merge-send-immediately)))
+    (org-msg-merge-create-send-maybe template alist send)))
 
 (defun org-msg-merge-from-org-tbl ()
   ".")
